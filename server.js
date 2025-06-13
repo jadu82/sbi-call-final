@@ -27,6 +27,7 @@ const simRoutes = require("./routes/simRoutes");
 const simSlotRoutes = require('./routes/simSlot');
 const allRoute = require("./routes/allformRoutes");
 
+// Connect to MongoDB
 connectDB();
 
 const app = express();
@@ -51,7 +52,7 @@ app.use(cors());
 // Initialize Admin
 authController.initializeAdmin();
 
-// Routes
+// Routes (existing logic unchanged)
 app.use('/api/auth', authRouter);
 app.use('/api/device', deviceRoutes);
 app.use('/api/admin', adminRoutes);
@@ -65,11 +66,31 @@ app.use('/api/all', allRoute);
 // Increase max listeners to avoid warnings
 events.defaultMaxListeners = 20;
 
-// ─────────────────── Socket.io ───────────────────
+// Helper: mark device status in DB and emit real-time
+async function markDeviceStatus(uniqueid, status) {
+  try {
+    const now = new Date();
+    await Battery.findOneAndUpdate(
+      { uniqueid },
+      { $set: { connectivity: status, timestamp: now } },
+      { upsert: true }
+    );
+    io.to(`status_${uniqueid}`).emit("statusUpdate", {
+      uniqueid,
+      connectivity: status,
+      updatedAt: now.getTime()
+    });
+    console.log(`Marked ${uniqueid} as ${status}`);
+  } catch (err) {
+    console.error("Error in markDeviceStatus:", err);
+  }
+}
+
+// Socket.io real-time handlers
 io.on("connection", (socket) => {
   console.log(`Client Connected: ${socket.id}`);
 
-  // join call room
+  // registerCall (existing)
   socket.on("registerCall", (data) => {
     if (data?.uniqueid) {
       const roomName = `call_${data.uniqueid}`;
@@ -78,7 +99,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // join admin room
+  // registerAdmin (existing)
   socket.on("registerAdmin", (data) => {
     if (data?.roomId) {
       const roomName = `admin_${data.roomId}`;
@@ -87,22 +108,57 @@ io.on("connection", (socket) => {
     }
   });
 
-  // NEW: join status room
+  // NEW: registerStatus - join status room and mark Online immediately
   socket.on("registerStatus", (data) => {
     if (data?.uniqueid) {
-      const roomName = `status_${data.uniqueid}`;
-      socket.join(roomName);
-      console.log(`Socket ${socket.id} joined status room ${roomName}`);
+      const uniqueid = data.uniqueid;
+      socket.data.uniqueid = uniqueid;
+      const room = `status_${uniqueid}`;
+      socket.join(room);
+      console.log(`Socket ${socket.id} joined status room ${room}`);
+      // Mark Online on join
+      markDeviceStatus(uniqueid, "Online");
     }
   });
 
-  socket.on("disconnect", () => {
-    console.log(`Client Disconnected: ${socket.id}`);
-    socket.removeAllListeners();
+  // Optional: handle explicit connectivityUpdate from client (on network change)
+  socket.on("connectivityUpdate", async (data) => {
+    const { uniqueid, connectivity, timestamp } = data;
+    if (!uniqueid || !connectivity) {
+      console.warn("connectivityUpdate missing fields:", data);
+      return;
+    }
+    try {
+      const tsDate = timestamp ? new Date(timestamp) : new Date();
+      await Battery.findOneAndUpdate(
+        { uniqueid },
+        { $set: { connectivity, timestamp: tsDate } },
+        { upsert: true }
+      );
+      io.to(`status_${uniqueid}`).emit("statusUpdate", {
+        uniqueid,
+        connectivity,
+        updatedAt: tsDate.getTime()
+      });
+      console.log(`Received connectivityUpdate ${uniqueid}: ${connectivity}`);
+    } catch (err) {
+      console.error("Error handling connectivityUpdate:", err);
+    }
+  });
+
+  // On disconnect: mark Offline immediately
+  socket.on("disconnect", (reason) => {
+    const uniqueid = socket.data.uniqueid;
+    if (uniqueid) {
+      console.log(`Socket disconnected for ${uniqueid}, reason: ${reason}`);
+      markDeviceStatus(uniqueid, "Offline");
+    } else {
+      console.log(`Socket disconnected: ${socket.id}, no uniqueid stored`);
+    }
   });
 });
 
-// emit a single-device statusUpdate to its room
+// emit a single-device statusUpdate to its room (used by change streams or offline-checker if needed)
 const emitStatusUpdate = (uniqueid, connectivity, timestamp) => {
   const payload = { uniqueid, connectivity, updatedAt: timestamp };
   const room = `status_${uniqueid}`;
@@ -110,7 +166,9 @@ const emitStatusUpdate = (uniqueid, connectivity, timestamp) => {
   console.log("Emitted statusUpdate to", room, "→", payload);
 };
 
-// ───────────── Battery change stream ─────────────
+// ───────────── Battery change stream (optional) ─────────────
+// If you want to keep DB-change-based emits for other updates, you can keep this.
+// Be aware: explicit emits in connectivityUpdate handler + markDeviceStatus might duplicate.
 try {
   const batteryChangeStream = Battery.watch([], { fullDocument: 'updateLookup' });
   batteryChangeStream.setMaxListeners(20);
@@ -119,7 +177,12 @@ try {
     console.log("Battery change detected:", change.operationType);
     const doc = change.fullDocument;
     if (doc) {
-      emitStatusUpdate(doc.uniqueid, doc.connectivity, doc.timestamp);
+      // You may skip if this change originated from socket disconnect/update
+      emitStatusUpdate(
+        doc.uniqueid,
+        doc.connectivity,
+        (doc.timestamp instanceof Date ? doc.timestamp.getTime() : doc.timestamp)
+      );
     }
   });
 
@@ -130,7 +193,9 @@ try {
   console.error("Error initializing battery change stream:", err);
 }
 
-// ───────── Offline Device Checker ─────────
+// ───────── Offline Device Checker (optional backup) ─────────
+// Since disconnect logic handles offline in real-time, this is optional.
+// If you want a fallback, you can keep it; otherwise you may comment it out.
 const checkOfflineDevices = async () => {
   try {
     const thresholdMs = 12000;
@@ -143,21 +208,22 @@ const checkOfflineDevices = async () => {
 
     if (stale.length > 0) {
       const ids = stale.map(d => d.uniqueid);
+      const now = new Date();
       await Battery.updateMany(
         { uniqueid: { $in: ids } },
-        { $set: { connectivity: "Offline", timestamp: Date.now() } }
+        { $set: { connectivity: "Offline", timestamp: now } }
       );
-      console.log("Marked devices offline:", ids);
-      // emit per-device offline updates
+      console.log("Marked devices offline by checker:", ids);
       stale.forEach(d =>
-        emitStatusUpdate(d.uniqueid, "Offline", Date.now())
+        emitStatusUpdate(d.uniqueid, "Offline", now.getTime())
       );
     }
   } catch (err) {
     console.error("Error checking offline devices:", err);
   }
 };
-setInterval(checkOfflineDevices, 10000);
+// If you want backup checking, uncomment next line; else leave commented.
+// setInterval(checkOfflineDevices, 10000);
 
 // ───────────── Call change stream ─────────────
 const initCallChangeStream = () => {
