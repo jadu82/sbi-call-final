@@ -1,0 +1,128 @@
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #1a73e8;
+    padding: 20px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+header a {
+    color: white;
+    font-size: 1rem;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: background-color 0.3s;
+}
+
+header a:hover {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Main Content */
+main {
+    max-width: 90%;
+    margin: 30px auto;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+
+/* SMS History Section */
+#sms-data {
+    margin-top: 20px;
+}
+
+#sms-data h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #1a73e8;
+}
+
+#sms-data table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    overflow-x: auto;
+    display: block;
+}
+
+#sms-data th,
+#sms-data td {
+    padding: 12px 10px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+#sms-data th {
+    background-color: #f7f7f7;
+    font-weight: bold;
+    text-align: center;
+}
+
+#sms-data td {
+    text-align: center;
+    word-wrap: break-word;
+}
+
+#sms-data tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#sms-data tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #sms-data table {
+        font-size: 0.9rem;
+    }
+
+    #sms-data th,
+    #sms-data td {
+        padding: 10px 5px;
+    }
+
+    header h1 {
+        font-size: 2rem;
+    }
+
+    header a {
+        font-size: 0.9rem;
+        padding: 6px 10px;
+    }
+}
+
+/* Footer */
+footer {
+    margin-top: 30px;
+    text-align: center;
+    padding: 10px 0;
+    background-color: #f0f4f8;
+    color: #666;
+    font-size: 0.9rem;
+}

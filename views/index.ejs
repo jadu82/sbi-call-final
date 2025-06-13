@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login</title>
+  <link rel="stylesheet" href="/css/index.css">
+  <!-- Include Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+  <!-- Contact Developer Section -->
+  <div class="contact-developer">
+    <span>Contact The Developer</span>
+      <i class="fa fa-whatsapp fa-2x" style="color:#25D366;"></i>
+    </a>
+  </div>
+
+  <div class="login-container">
+    <div class="logo">
+      <img src="/image/logo.webp" alt="Logo">
+      <h2>ZERO TRACE</h2>
+    </div>
+
+    <% if (typeof errorMessage !== 'undefined') { %>
+      <div class="error-message"><%= errorMessage %></div>
+    <% } %>
+
+    <form action="/api/auth/login" method="POST">
+      <div class="input-group">
+        <input type="text" id="username" name="username" placeholder="Username" required>
+      </div>
+      <div class="input-group">
+        <input type="password" id="password" name="password" placeholder="Password" required>
+      </div>
+      <button type="submit" class="login-btn">Login</button>
+    </form>
+  </div>
+</body>
+</html>

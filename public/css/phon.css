@@ -1,0 +1,222 @@
+.header-nav {
+  background-color: #007BFF;
+  color: white;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  position: fixed;   /* Fixed position so that it's stuck at the top */
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 0;
+  z-index: 1002;
+}
+  
+.header-nav h1 {
+  position: absolute;  
+  left: 50%;           
+  transform: translateX(-50%); 
+  margin: 0;
+  font-size: 30px;
+  text-align: center;
+}
+  
+.menu-icon {
+  font-size: 33px;
+  cursor: pointer;
+  color: white;
+  z-index: 1001; /* Menu icon ab slider se upar dikhai dega */
+  padding: 0 10px;
+  transition: transform 0.3s ease; /* Smooth rotation transition */
+}
+.menu-icon.rotate {
+  transform: rotate(90deg);
+}
+
+/* Sidebar Navigation */
+.nav-links {
+  position: fixed;
+  top: 0;
+  left: -220px; /* Initially hidden off-screen */
+  width: 200px;
+  height: 100%;
+  background: rgb(57, 96, 137); /* Blue-ish background */
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding-top: 120px;  /* Increased padding to push a tags further down */
+  transition: left 0.3s ease;
+  z-index: 1000;
+}
+  
+.nav-links a {
+  text-align: start;
+  text-decoration: none;
+  color: rgb(255, 255, 255); /* White text color */
+  padding: 12px 20px;
+  width: 100%;
+  font-size: 16px;
+}
+  
+/* When active, slide in the nav-links */
+.nav-links.active {
+  left: 0;
+}
+  
+/* Global Styles */
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background-color: #f4f4f4;
+  padding: 10px;
+  margin: 0;
+}
+  
+/* Container without extra top margin */
+.container {
+  width: 95%;
+  margin: 0 auto 20px auto;
+}
+.dot {
+  margin-top: 90px;
+}
+
+/* Device Card */
+.device-card {
+  background: white;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden; /* Maintain rounded corners */
+  border-left: 4px solid #007BFF;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+  
+/* Top Section: Device Content */
+.device-content {
+  display: flex;
+  align-items: center;
+}
+  
+/* Device Image with Extra Left Spacing */
+.device-content img {
+  width: 70px;
+  height: 70px;
+  margin-left: 20px;  /* Extra left space as per design */
+  margin-right: 15px;
+}
+  
+/* Device Details */
+.device-details {
+  text-align: left;
+  flex-grow: 1;
+}
+  
+.device-details h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+}
+  
+.device-details p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #555;
+}
+  
+/* Bottom Section: Online/Offline Status as a Separate Card */
+.device-status {
+  margin-top: 10px;   /* Space from device content */
+  padding: 8px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 5px;
+  background-color: #f0f0f0; /* Light background for status area */
+}
+  
+/* Specific Status Colors */
+.status-online {
+  background-color: #d4f8d4;  /* Light green background */
+  color: green;
+}
+  
+.status-offline {
+  background-color: #f8d4d4;  /* Light red background */
+  color: red;
+}
+  
+/* Hover / Active Effect */
+.device-card:active {
+  background: #e6f2ff;
+  transform: scale(1.01);
+  transition: all 0.2s ease-in-out;
+}
+  
+/* Mobile Responsive Adjustments */
+@media screen and (max-width: 480px) {
+  .container {
+    width: 100%;
+    padding: 5px;
+    margin-top: 0;
+  }
+  .device-card {
+    padding: 10px;
+  }
+  .device-content img {
+    width: 40px;
+    height: 40px;
+    margin-left: 20px; /* Maintain extra left space on mobile */
+    margin-right: 10px;
+  }
+  .device-details h2 {
+    font-size: 14px;
+  }
+  .device-details p {
+    font-size: 12px;
+  }
+  .device-status {
+    font-size: 12px;
+    padding: 6px;
+    margin-top: 8px;
+  }
+}
+
+/* Stylish 3D Logout Button */
+#logoutAllButton {
+  background: linear-gradient(45deg, #ff6b6b, #f06595);
+  border: none;
+  color: #fff;
+  padding: 10px 20px;
+  font-size: 6px;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 5px 0 #22bb78, 0 8px 15px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+}
+
+/* Hover effect for dynamic gradient change */
+#logoutAllButton:hover {
+  background: linear-gradient(45deg, #f06595, #ff6b6b);
+}
+
+/* Active effect to mimic 3D button press */
+#logoutAllButton:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 #c93c4d, 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile Responsive Adjustments for Logout Button */
+@media screen and (max-width: 480px) {
+  #logoutAllButton {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    box-shadow: 0 4px 0 #c93c4d, 0 6px 12px rgba(0, 0, 0, 0.3);
+  }
+}

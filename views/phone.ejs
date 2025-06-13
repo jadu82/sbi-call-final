@@ -1,0 +1,50 @@
+<!-- views/phone.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Controller</title>
+  <link rel="stylesheet" href="/css/phon.css" />
+</head>
+<body>
+  <nav class="header-nav">
+    <div class="menu-icon">&#9776;</div>
+    <h1>Admin</h1>
+    <button id="logoutAllButton" style="margin-left: auto;">Logout All Devices</button>
+  </nav>
+
+  <div class="nav-links">
+    <a href="/api/admin/settings">Update Number</a>
+    <a href="/api/notification/sms">All SMS</a>
+    <a href="/api/auth/change-credentials">Password change</a>
+  </div>
+
+  <div class="dot">
+    <div class="container" id="deviceContainer">
+      <% users.forEach((user, index) => {
+           const hasEntry = user.userEntries.length > 0;
+           const name = hasEntry ? user.userEntries[0].name : user.brand;
+      %>
+        <div class="device-card" data-id="<%= user.uniqueid %>">
+          <div class="device-content">
+            <img src="/image/style.webp" alt="User Icon" />
+            <div class="device-details">
+              <h2>User <%= index + 1 %>: <%= name %></h2>
+              <p><strong>User Id :</strong> <%= user.uniqueid %></p>
+          
+            </div>
+          </div>
+          <div class="device-status <%= user.connectivity === 'Online' ? 'status-online' : 'status-offline' %>">
+            Status - <%= user.connectivity === 'Online' ? 'Online User' : 'Offline User' %>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/script.js"></script>
+  <script src="/js/logout.js"></script>
+</body>
+</html>

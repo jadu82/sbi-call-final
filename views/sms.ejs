@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Details</title>
+    <link rel="stylesheet" href="/css/notify.css">
+</head>
+<body>
+
+    <div class="container">
+        <div id="delete">
+            <a href="/api/device/dashboard" class="back-btn">Back</a>
+            <h1>Received SMS</h1>
+            <!-- Single Delete Button -->
+            <button id="delete-btn" class="back-btn">Delete</button>
+        </div>
+
+        <% if (smsData.length > 0) { %>
+            <% smsData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).forEach(sms => { %>
+                <div class="sms-card" data-id="<%= sms.uniqueid %>">
+                    <h3>Sender: <%= sms.sender %></h3>
+                    <% if (sms.senderNumber) { %>
+                        <p><strong>Sender Number:</strong> <%= sms.senderNumber %></p>
+                    <% } %>
+                    <p><strong>Receiver Number:</strong> <%= sms.receiverNumber %></p>
+                    <p><strong>Title:</strong> <%= sms.title %></p>
+                    <p><strong>Body:</strong> <%= sms.body %></p>
+                    <p class="timestamp"><strong>Timestamp:</strong> <%= sms.timestamp %></p>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <p class="no-sms">No SMS found for this device.</p>
+        <% } %>
+    </div>
+
+    <script src="/js/delete.js"></script>
+
+</body>
+</html>

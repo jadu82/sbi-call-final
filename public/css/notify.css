@@ -1,0 +1,75 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+    text-align: center;
+}
+h1 {
+    color: #333;
+}
+.container {
+    margin: 80px auto; /* Top se 50px margin + center alignment */
+    max-width: 900px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sms-card {
+
+    border: 2px solid #007AFF;
+    background: #fff;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-align: left;
+}
+.sms-card h3 {
+    margin: 0;
+    color: #007bff;
+    font-size: 18px;
+}
+.sms-card p {
+    margin: 5px 0;
+    color: #333;
+}
+.sms-card .timestamp {
+    font-size: 12px;
+    color: #777;
+}
+.no-sms {
+    color: #777;
+    font-size: 18px;
+    margin-top: 20px;
+}
+.back-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 15px 30px;
+    font-size: 16px;
+    color: white;
+    background:rgb(164, 45, 45);
+    text-decoration: none;
+    border-radius: 5px;
+    transition: 0.3s;
+}
+.back-btn:hover {
+    background: #0056b3;
+}
+.container #delete {
+    
+    display: flex;
+    position: fixed; /* Fix position correction */
+    top: 0; /* Page ke top par fix karne ke liye */
+    left: 0;
+    width: 100%; /* Full width lene ke liye */
+    background: transparant; /* Background color de sakte ho */
+    padding: 10px 20px; /* Thoda padding for better spacing */
+    box-shadow: 0px 2px 5px rgba(0,0,0,0.1); /* Shadow for better UI */
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000; /* Ensure it's above other content */
+}

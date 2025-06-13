@@ -1,0 +1,97 @@
+<style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+    
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f7fc;
+                color: #333;
+            }
+    
+            a {
+                text-decoration: none;
+                color: inherit;
+            }
+    
+            .container {
+                width: 80%;
+                margin: 0 auto;
+            }
+    
+            header{
+                background-color: #4CAF50;
+                padding: 15px;
+                color: white;
+                text-align: center;
+            }
+    
+            header h1 {
+                font-size: 2rem;
+            }
+    
+            .dashboard-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+    
+            .card {
+                background-color: white;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                border-radius: 10px;
+                padding: 20px;
+            }
+    
+            .card h3 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+    
+            .card p {
+                font-size: 1rem;
+                color: #555;
+            }
+    
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+    
+            table th, table td {
+                padding: 10px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+    
+            table th {
+                background-color: #f2f2f2;
+            }
+    
+            .settings-icon a {
+                display: inline-block;
+                margin-top: 10px;
+            }
+    
+            .settings-btn {
+                cursor: pointer;
+                background-color: #ff5722;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 5px;
+            }
+    
+            .settings-btn:hover {
+                background-color: #e64a19;
+            }
+            tr.clickable-row {
+                cursor: pointer;
+            }
+            tr.clickable-row:hover {
+                background-color: #f2f2f2;
+            }
+        </style>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Settings</title>
+    <link rel="stylesheet" href="/css/setting.css">
+    <script src="/js/settings.js"></script> <!-- Link to external JS file -->
+</head>
+<body>
+    <header>
+        <h1>Settings</h1>
+    </header>
+
+    <main>
+        <section id="update-phone">
+            <h2>Update Admin Phone Number</h2>
+            <form action="/api/admin/update-number" method="POST" id="phoneForm">
+                <label for="phoneNumber">New Phone Number:</label>
+                <input type="tel" name="phoneNumber" id="phoneNumber" value="<%= adminPhoneNumber || '' %>" required>
+                <div class="button-group">
+                    <button type="submit" class="update-btn">Update Number</button>
+                    <button type="button" class="erase-btn" id="eraseButton">Erase Number</button>
+                </div>
+            </form>
+        </section>
+        <div class="back-link">
+            <a href="/api/device/dashboard">Go Back </a>
+        </div>
+    </main>
+</body>
+</html>

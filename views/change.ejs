@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change Credentials</title>
+  <link rel="stylesheet" href="/css/change.css">
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <span>YOUR CREDENTIALS</span>
+  </nav>
+
+  <div class="container">
+    <h1>Change Admin Credentials</h1>
+
+    <!-- Display error message if it exists -->
+    <% if (message) { %>
+      <div class="error-message">
+        <%= message %>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/api/auth/change-credentials">
+      <div class="input-group">
+        <input type="password" name="oldPassword" id="oldPassword" placeholder="Current Password" required />
+      </div>
+      <div class="input-group">
+        <input type="text" name="newUsername" id="newUsername" placeholder="New Username" />
+      </div>
+      <div class="input-group">
+        <input type="password" name="newPassword" id="newPassword" placeholder="New Password" />
+      </div>
+      <div class="input-group">
+        <button type="submit">Update Credentials</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
