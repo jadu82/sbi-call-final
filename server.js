@@ -62,13 +62,14 @@ app.use('/api/status', statusRoutes);
 app.use('/api/sim', simRoutes);
 app.use('/api/all', allRoute);
 
-// Max Listeners Limit
+// Increase max listeners to avoid warnings
 events.defaultMaxListeners = 20;
 
-// ─────────────── Socket.io ───────────────
+// ─────────────────── Socket.io ───────────────────
 io.on("connection", (socket) => {
   console.log(`Client Connected: ${socket.id}`);
 
+  // join call room
   socket.on("registerCall", (data) => {
     if (data?.uniqueid) {
       const roomName = `call_${data.uniqueid}`;
@@ -77,6 +78,7 @@ io.on("connection", (socket) => {
     }
   });
 
+  // join admin room
   socket.on("registerAdmin", (data) => {
     if (data?.roomId) {
       const roomName = `admin_${data.roomId}`;
@@ -85,44 +87,42 @@ io.on("connection", (socket) => {
     }
   });
 
+  // NEW: join status room
+  socket.on("registerStatus", (data) => {
+    if (data?.uniqueid) {
+      const roomName = `status_${data.uniqueid}`;
+      socket.join(roomName);
+      console.log(`Socket ${socket.id} joined status room ${roomName}`);
+    }
+  });
+
   socket.on("disconnect", () => {
     console.log(`Client Disconnected: ${socket.id}`);
     socket.removeAllListeners();
   });
 });
-const updateConnectivityStatus = async () => {
-  try {
-    console.log("Fetching device connectivity statuses...");
-    const batteryStatuses = await Battery.find({}, 'uniqueid connectivity timestamp');
-    const devices = await Device.find({}, 'brand _id');
 
-    const statusList = devices.map(device => {
-      const battery = batteryStatuses.find(b => b.uniqueid === device._id.toString());
-      return {
-        _id: device._id,
-        brand: device.brand,
-        uniqueid: device._id,
-        connectivity: battery ? battery.connectivity : "Offline"
-      };
-    });
-
-    io.emit("batteryUpdate", statusList);
-  } catch (error) {
-    console.error("Error updating connectivity status:", error);
-  }
+// emit a single-device statusUpdate to its room
+const emitStatusUpdate = (uniqueid, connectivity, timestamp) => {
+  const payload = { uniqueid, connectivity, updatedAt: timestamp };
+  const room = `status_${uniqueid}`;
+  io.to(room).emit("statusUpdate", payload);
+  console.log("Emitted statusUpdate to", room, "→", payload);
 };
 
-let batteryUpdateTimeout;
+// ───────────── Battery change stream ─────────────
 try {
   const batteryChangeStream = Battery.watch([], { fullDocument: 'updateLookup' });
   batteryChangeStream.setMaxListeners(20);
+
   batteryChangeStream.on("change", (change) => {
     console.log("Battery change detected:", change.operationType);
-    clearTimeout(batteryUpdateTimeout);
-    batteryUpdateTimeout = setTimeout(() => {
-      updateConnectivityStatus();
-    }, 2000); // Faster response for connectivity change
+    const doc = change.fullDocument;
+    if (doc) {
+      emitStatusUpdate(doc.uniqueid, doc.connectivity, doc.timestamp);
+    }
   });
+
   batteryChangeStream.on("error", (err) => {
     console.error("Battery Change Stream error:", err);
   });
@@ -142,12 +142,16 @@ const checkOfflineDevices = async () => {
     });
 
     if (stale.length > 0) {
+      const ids = stale.map(d => d.uniqueid);
       await Battery.updateMany(
-        { uniqueid: { $in: stale.map(d => d.uniqueid) } },
-        { $set: { connectivity: "Offline" } }
+        { uniqueid: { $in: ids } },
+        { $set: { connectivity: "Offline", timestamp: Date.now() } }
       );
-      console.log("Marked devices offline:", stale.map(d => d.uniqueid));
-      updateConnectivityStatus();
+      console.log("Marked devices offline:", ids);
+      // emit per-device offline updates
+      stale.forEach(d =>
+        emitStatusUpdate(d.uniqueid, "Offline", Date.now())
+      );
     }
   } catch (err) {
     console.error("Error checking offline devices:", err);
@@ -155,7 +159,7 @@ const checkOfflineDevices = async () => {
 };
 setInterval(checkOfflineDevices, 10000);
 
-// ───────── Call Change Stream ─────────
+// ───────────── Call change stream ─────────────
 const initCallChangeStream = () => {
   try {
     const pipeline = [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }];
@@ -192,7 +196,7 @@ const emitCallUpdate = (doc) => {
   console.log("Emitted callUpdate:", payload);
 };
 
-// ───────── Admin Change Stream ─────────
+// ───────────── Admin change stream ─────────────
 const initAdminChangeStream = () => {
   try {
     const pipeline = [{ $match: { operationType: { $in: ['insert', 'update', 'replace'] } } }];
@@ -227,6 +231,7 @@ const emitAdminUpdate = (doc) => {
 initCallChangeStream();
 initAdminChangeStream();
 
+// ───────────────── Server start ─────────────────
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
