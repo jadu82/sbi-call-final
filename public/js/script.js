@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
       if (target && target.dataset.id) {
         const deviceId = target.dataset.id;
-        window.location.href = /api/device/admin/phone/${deviceId};
+        window.location.href = `/api/device/admin/phone/${deviceId}`;
       }
     });
   }
@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   function updateDeviceCard(battery) {
-    const deviceCard = document.querySelector([data-id="${battery.uniqueid}"]);
+    const deviceCard = document.querySelector(`[data-id="${battery.uniqueid}"]`);
     
     if (deviceCard) {
    
@@ -67,12 +67,12 @@ document.addEventListener("DOMContentLoaded", function() {
       
       const uniqueidElement = deviceCard.querySelector("p:nth-child(2)");
       if (uniqueidElement) {
-        uniqueidElement.innerHTML = <strong>Device Id:</strong> ${battery.uniqueid || 'N/A'};
+        uniqueidElement.innerHTML = `<strong>Device Id:</strong> ${battery.uniqueid || 'N/A'}`;
       }
 
       const batteryElement = deviceCard.querySelector(".device-details p:nth-child(3)");
       if (batteryElement) {
-        batteryElement.innerHTML = <strong>Battery:</strong> ${battery.batteryLevel ? battery.batteryLevel + '%' : 'N/A'};
+        batteryElement.innerHTML = `<strong>Battery:</strong> ${battery.batteryLevel ? battery.batteryLevel + '%' : 'N/A'}`;
       }
 
       const statusElement = deviceCard.querySelector(".device-status");
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function() {
     deviceCard.classList.add("device-card");
     deviceCard.dataset.id = newDevice.uniqueid;
 
-    deviceCard.innerHTML = 
+    deviceCard.innerHTML = `
       <div class="device-content">
         <img src="/image/nothing.webp" alt="Device Icon" />
         <div class="device-details">
@@ -110,8 +110,8 @@ document.addEventListener("DOMContentLoaded", function() {
       <div class="device-status ${newDevice.connectivity === 'Online' ? 'status-online' : 'status-offline'}">
         Status - ${newDevice.connectivity === 'Online' ? 'Online User' : 'Offline User'}
       </div>
-    ;
+    `;
 
     container.appendChild(deviceCard);
   }
-})
+});
