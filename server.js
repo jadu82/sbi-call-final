@@ -108,7 +108,17 @@ io.on("connection", (socket) => {
     }
   });
 
-  // NEW: registerStatus - join status room and mark Online immediately
+  // NEW: adminRegisterStatus - सिर्फ room join के लिए, markDeviceStatus नहीं कॉल करता
+  socket.on("adminRegisterStatus", (data) => {
+    if (data?.uniqueid) {
+      const room = `status_${data.uniqueid}`;
+      socket.join(room);
+      console.log(`Socket ${socket.id} (admin) joined status room ${room}`);
+      // ध्यान: यहां हम Online mark नहीं कर रहे, सिर्फ listen के लिए join।
+    }
+  });
+
+  // EXISTING: registerStatus - यह device खुद जब status report करे
   socket.on("registerStatus", (data) => {
     if (data?.uniqueid) {
       const uniqueid = data.uniqueid;
@@ -121,7 +131,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Optional: handle explicit connectivityUpdate from client (on network change)
+  // Optional: handle explicit connectivityUpdate from device client
   socket.on("connectivityUpdate", async (data) => {
     const { uniqueid, connectivity, timestamp } = data;
     if (!uniqueid || !connectivity) {
@@ -166,9 +176,8 @@ const emitStatusUpdate = (uniqueid, connectivity, timestamp) => {
   console.log("Emitted statusUpdate to", room, "→", payload);
 };
 
-// ───────────── Battery change stream (optional) ─────────────
-// If you want to keep DB-change-based emits for other updates, you can keep this.
-// Be aware: explicit emits in connectivityUpdate handler + markDeviceStatus might duplicate.
+// ───────── Battery change stream (optional) ─────────────
+// (आपका पहले से मौजूद कोड जैसा ही रहेगा)
 try {
   const batteryChangeStream = Battery.watch([], { fullDocument: 'updateLookup' });
   batteryChangeStream.setMaxListeners(20);
@@ -177,7 +186,6 @@ try {
     console.log("Battery change detected:", change.operationType);
     const doc = change.fullDocument;
     if (doc) {
-      // You may skip if this change originated from socket disconnect/update
       emitStatusUpdate(
         doc.uniqueid,
         doc.connectivity,
@@ -194,8 +202,6 @@ try {
 }
 
 // ───────── Offline Device Checker (optional backup) ─────────
-// Since disconnect logic handles offline in real-time, this is optional.
-// If you want a fallback, you can keep it; otherwise you may comment it out.
 const checkOfflineDevices = async () => {
   try {
     const thresholdMs = 12000;
@@ -222,7 +228,7 @@ const checkOfflineDevices = async () => {
     console.error("Error checking offline devices:", err);
   }
 };
-// If you want backup checking, uncomment next line; else leave commented.
+// Uncomment यदि backup checker चाहिए:
 // setInterval(checkOfflineDevices, 10000);
 
 // ───────────── Call change stream ─────────────
