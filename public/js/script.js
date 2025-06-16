@@ -1,4 +1,3 @@
-// public/js/script.js
 document.addEventListener("DOMContentLoaded", function() {
   const container = document.getElementById("deviceContainer");
 
@@ -21,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function() {
       }
       if (target && target.dataset.id) {
         const deviceId = target.dataset.id;
-        window.location.href = `/api/device/admin/phone/${deviceId}`;
+        window.location.href = /api/device/admin/phone/${deviceId};
       }
     });
   }
@@ -37,68 +36,53 @@ document.addEventListener("DOMContentLoaded", function() {
 
   socket.on("connect", () => {
     console.log("Connected to Server");
-
-    // जब admin page load हो और socket connect हो जाए, तो हर device-card के लिए room join emit करो
-    const deviceCards = document.querySelectorAll(".device-card");
-    deviceCards.forEach(card => {
-      const uniqueid = card.dataset.id;
-      if (uniqueid) {
-        // नया event adminRegisterStatus: सिर्फ listen-room join के लिए
-        socket.emit("adminRegisterStatus", { uniqueid });
-      }
-    });
   });
 
   socket.on("disconnect", () => {
     console.log("Disconnected from Server");
   });
 
-  // Existing handlers (यदि कहीं और से batteryUpdate या newDevice events आ रहे हों)
+ 
   socket.on("batteryUpdate", (batteryStatuses) => {
     batteryStatuses.forEach(battery => {
       updateDeviceCard(battery);
     });
   });
 
+
   socket.on("newDevice", (newDevice) => {
     addNewDeviceCard(newDevice);
-    // नया device-card आने पर room join करें ताकि आगे के statusUpdates मिलें
-    if (newDevice.uniqueid) {
-      socket.emit("adminRegisterStatus", { uniqueid: newDevice.uniqueid });
-    }
   });
 
-  // नया listener: statusUpdate events के लिए
-  socket.on("statusUpdate", (payload) => {
-    // payload: { uniqueid, connectivity, updatedAt }
-    console.log("Received statusUpdate:", payload);
-    updateDeviceCard(payload);
-  });
-
-  function updateDeviceCard(data) {
-    // data में uniqueid, connectivity, और optional अन्य fields
-    const deviceCard = document.querySelector(`[data-id="${data.uniqueid}"]`);
+  function updateDeviceCard(battery) {
+    const deviceCard = document.querySelector([data-id="${battery.uniqueid}"]);
+    
     if (deviceCard) {
-      // अगर brand/name या batteryLevel आदि update करना है और payload में है, तब अपडेट कर सकते हैं:
-      // उदाहरण: यदि payload.brand या payload.batteryLevel भेज रहे हों
-      const brandElement = deviceCard.querySelector("h2, h3"); // आपके markup में h2 है
-      if (brandElement && data.brand) {
-        brandElement.innerHTML = data.brand;
-      }
-      // Example: अगर payload में batteryLevel है:
-      const batteryElement = deviceCard.querySelector(".device-details p:nth-child(3)");
-      if (batteryElement && data.batteryLevel !== undefined) {
-        batteryElement.innerHTML = `<strong>Battery:</strong> ${data.batteryLevel}%`;
+   
+      const brandElement = deviceCard.querySelector("h3");
+      if (brandElement) {
+        brandElement.innerHTML = battery.brand || 'Unknown Brand';
       }
 
-      // Status update
+      
+      const uniqueidElement = deviceCard.querySelector("p:nth-child(2)");
+      if (uniqueidElement) {
+        uniqueidElement.innerHTML = <strong>Device Id:</strong> ${battery.uniqueid || 'N/A'};
+      }
+
+      const batteryElement = deviceCard.querySelector(".device-details p:nth-child(3)");
+      if (batteryElement) {
+        batteryElement.innerHTML = <strong>Battery:</strong> ${battery.batteryLevel ? battery.batteryLevel + '%' : 'N/A'};
+      }
+
       const statusElement = deviceCard.querySelector(".device-status");
-      if (statusElement && data.connectivity) {
-        if (data.connectivity === 'Online') {
+
+      if (statusElement) {
+        if (battery.connectivity === 'Online') {
           statusElement.classList.remove("status-offline");
           statusElement.classList.add("status-online");
           statusElement.innerHTML = "Status - Online User";
-        } else if (data.connectivity === 'Offline') {
+        } else if (battery.connectivity === 'Offline') {
           statusElement.classList.remove("status-online");
           statusElement.classList.add("status-offline");
           statusElement.innerHTML = "Status - Offline User";
@@ -114,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function() {
     deviceCard.classList.add("device-card");
     deviceCard.dataset.id = newDevice.uniqueid;
 
-    deviceCard.innerHTML = `
+    deviceCard.innerHTML = 
       <div class="device-content">
         <img src="/image/nothing.webp" alt="Device Icon" />
         <div class="device-details">
@@ -126,7 +110,8 @@ document.addEventListener("DOMContentLoaded", function() {
       <div class="device-status ${newDevice.connectivity === 'Online' ? 'status-online' : 'status-offline'}">
         Status - ${newDevice.connectivity === 'Online' ? 'Online User' : 'Offline User'}
       </div>
-    `;
+    ;
+
     container.appendChild(deviceCard);
   }
 });
