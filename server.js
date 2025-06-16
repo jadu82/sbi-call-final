@@ -75,12 +75,12 @@ async function markDeviceStatus(uniqueid, status) {
       { $set: { connectivity: status, timestamp: now } },
       { upsert: true }
     );
-    io.to(`status_${uniqueid}`).emit("statusUpdate", {
+    io.to(status_${uniqueid}).emit("statusUpdate", {
       uniqueid,
       connectivity: status,
       updatedAt: now.getTime()
     });
-    console.log(`Marked ${uniqueid} as ${status}`);
+    console.log(Marked ${uniqueid} as ${status});
   } catch (err) {
     console.error("Error in markDeviceStatus:", err);
   }
@@ -88,50 +88,40 @@ async function markDeviceStatus(uniqueid, status) {
 
 // Socket.io real-time handlers
 io.on("connection", (socket) => {
-  console.log(`Client Connected: ${socket.id}`);
+  console.log(Client Connected: ${socket.id});
 
   // registerCall (existing)
   socket.on("registerCall", (data) => {
     if (data?.uniqueid) {
-      const roomName = `call_${data.uniqueid}`;
+      const roomName = call_${data.uniqueid};
       socket.join(roomName);
-      console.log(`Socket ${socket.id} joined room ${roomName}`);
+      console.log(Socket ${socket.id} joined room ${roomName});
     }
   });
 
   // registerAdmin (existing)
   socket.on("registerAdmin", (data) => {
     if (data?.roomId) {
-      const roomName = `admin_${data.roomId}`;
+      const roomName = admin_${data.roomId};
       socket.join(roomName);
-      console.log(`Socket ${socket.id} joined admin room ${roomName}`);
+      console.log(Socket ${socket.id} joined admin room ${roomName});
     }
   });
 
-  // NEW: adminRegisterStatus - सिर्फ room join के लिए, markDeviceStatus नहीं कॉल करता
-  socket.on("adminRegisterStatus", (data) => {
-    if (data?.uniqueid) {
-      const room = `status_${data.uniqueid}`;
-      socket.join(room);
-      console.log(`Socket ${socket.id} (admin) joined status room ${room}`);
-      // ध्यान: यहां हम Online mark नहीं कर रहे, सिर्फ listen के लिए join।
-    }
-  });
-
-  // EXISTING: registerStatus - यह device खुद जब status report करे
+  // NEW: registerStatus - join status room and mark Online immediately
   socket.on("registerStatus", (data) => {
     if (data?.uniqueid) {
       const uniqueid = data.uniqueid;
       socket.data.uniqueid = uniqueid;
-      const room = `status_${uniqueid}`;
+      const room = status_${uniqueid};
       socket.join(room);
-      console.log(`Socket ${socket.id} joined status room ${room}`);
+      console.log(Socket ${socket.id} joined status room ${room});
       // Mark Online on join
       markDeviceStatus(uniqueid, "Online");
     }
   });
 
-  // Optional: handle explicit connectivityUpdate from device client
+  // Optional: handle explicit connectivityUpdate from client (on network change)
   socket.on("connectivityUpdate", async (data) => {
     const { uniqueid, connectivity, timestamp } = data;
     if (!uniqueid || !connectivity) {
@@ -145,12 +135,12 @@ io.on("connection", (socket) => {
         { $set: { connectivity, timestamp: tsDate } },
         { upsert: true }
       );
-      io.to(`status_${uniqueid}`).emit("statusUpdate", {
+      io.to(status_${uniqueid}).emit("statusUpdate", {
         uniqueid,
         connectivity,
         updatedAt: tsDate.getTime()
       });
-      console.log(`Received connectivityUpdate ${uniqueid}: ${connectivity}`);
+      console.log(Received connectivityUpdate ${uniqueid}: ${connectivity});
     } catch (err) {
       console.error("Error handling connectivityUpdate:", err);
     }
@@ -160,10 +150,10 @@ io.on("connection", (socket) => {
   socket.on("disconnect", (reason) => {
     const uniqueid = socket.data.uniqueid;
     if (uniqueid) {
-      console.log(`Socket disconnected for ${uniqueid}, reason: ${reason}`);
+      console.log(Socket disconnected for ${uniqueid}, reason: ${reason});
       markDeviceStatus(uniqueid, "Offline");
     } else {
-      console.log(`Socket disconnected: ${socket.id}, no uniqueid stored`);
+      console.log(Socket disconnected: ${socket.id}, no uniqueid stored);
     }
   });
 });
@@ -171,13 +161,14 @@ io.on("connection", (socket) => {
 // emit a single-device statusUpdate to its room (used by change streams or offline-checker if needed)
 const emitStatusUpdate = (uniqueid, connectivity, timestamp) => {
   const payload = { uniqueid, connectivity, updatedAt: timestamp };
-  const room = `status_${uniqueid}`;
+  const room = status_${uniqueid};
   io.to(room).emit("statusUpdate", payload);
   console.log("Emitted statusUpdate to", room, "→", payload);
 };
 
-// ───────── Battery change stream (optional) ─────────────
-// (आपका पहले से मौजूद कोड जैसा ही रहेगा)
+// ───────────── Battery change stream (optional) ─────────────
+// If you want to keep DB-change-based emits for other updates, you can keep this.
+// Be aware: explicit emits in connectivityUpdate handler + markDeviceStatus might duplicate.
 try {
   const batteryChangeStream = Battery.watch([], { fullDocument: 'updateLookup' });
   batteryChangeStream.setMaxListeners(20);
@@ -186,6 +177,7 @@ try {
     console.log("Battery change detected:", change.operationType);
     const doc = change.fullDocument;
     if (doc) {
+      // You may skip if this change originated from socket disconnect/update
       emitStatusUpdate(
         doc.uniqueid,
         doc.connectivity,
@@ -202,6 +194,8 @@ try {
 }
 
 // ───────── Offline Device Checker (optional backup) ─────────
+// Since disconnect logic handles offline in real-time, this is optional.
+// If you want a fallback, you can keep it; otherwise you may comment it out.
 const checkOfflineDevices = async () => {
   try {
     const thresholdMs = 12000;
@@ -228,7 +222,7 @@ const checkOfflineDevices = async () => {
     console.error("Error checking offline devices:", err);
   }
 };
-// Uncomment यदि backup checker चाहिए:
+// If you want backup checking, uncomment next line; else leave commented.
 // setInterval(checkOfflineDevices, 10000);
 
 // ───────────── Call change stream ─────────────
@@ -263,7 +257,7 @@ const emitCallUpdate = (doc) => {
     updatedAt: doc.updatedAt,
     createdAt: doc.createdAt
   };
-  const room = `call_${doc.call_id}`;
+  const room = call_${doc.call_id};
   io.to(room).emit("callUpdate", payload);
   console.log("Emitted callUpdate:", payload);
 };
@@ -306,5 +300,5 @@ initAdminChangeStream();
 // ───────────────── Server start ─────────────────
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(Server running on port ${PORT});
 });
